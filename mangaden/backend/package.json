@@ -1,0 +1,27 @@
+{
+  "name": "mangaden-backend",
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev":        "tsx watch src/index.ts",
+    "db:push":    "drizzle-kit push",
+    "db:studio":  "drizzle-kit studio"
+  },
+  "dependencies": {
+    "@koa/router":           "^12.0.1",
+    "@paralleldrive/cuid2":  "^2.2.2",
+    "better-sqlite3":        "^9.6.0",
+    "drizzle-orm":           "^0.31.2",
+    "koa":                   "^2.15.3",
+    "koa-body":              "^6.0.1"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.10",
+    "@types/koa":            "^2.15.0",
+    "@types/koa__router":    "^12.0.4",
+    "@types/node":           "^20.14.5",
+    "drizzle-kit":           "^0.22.7",
+    "tsx":                   "^4.15.5",
+    "typescript":            "^5.5.2"
+  }
+}
