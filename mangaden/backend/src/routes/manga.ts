@@ -1,5 +1,6 @@
 import Router from '@koa/router';
 import { and, desc, eq, like, type SQL } from 'drizzle-orm';
+import path from 'path';
 import { db } from '../db/index';
 import { manga } from '../db/schema';
 
@@ -11,13 +12,28 @@ const parse = (m: typeof manga.$inferSelect) => ({
   genres: m.genres ? (JSON.parse(m.genres) as string[]) : [],
 });
 
-// GET /api/manga?status=reading&search=berserk
+// POST /api/manga/upload-cover — multipart file upload, returns { url }
+// Must be defined before /:id to avoid route collision
+router.post('/upload-cover', async (ctx) => {
+  const file = (ctx.request as any).files?.cover;
+  if (!file) {
+    ctx.status = 400;
+    ctx.body   = { error: 'No file provided. Field name must be "cover".' };
+    return;
+  }
+  const filepath = file.filepath ?? file.path;
+  const filename = path.basename(filepath);
+  ctx.body = { url: `/api/covers/${filename}` };
+});
+
+// GET /api/manga?status=reading&search=berserk&type=manga
 router.get('/', async (ctx) => {
-  const { status, search } = ctx.query as Record<string, string>;
+  const { status, search, type } = ctx.query as Record<string, string>;
   const where: SQL[] = [];
 
   if (status && status !== 'all') where.push(eq(manga.status, status as any));
-  if (search)                      where.push(like(manga.title, `%${search}%`));
+  if (type && type !== 'all')     where.push(eq(manga.type, type as any));
+  if (search)                     where.push(like(manga.title, `%${search}%`));
 
   const rows = await db
     .select()
@@ -31,14 +47,22 @@ router.get('/', async (ctx) => {
 // GET /api/manga/stats — must come before /:id
 router.get('/stats', async (ctx) => {
   const rows = await db.select().from(manga);
-  const stats = rows.reduce(
+  const statusStats = rows.reduce(
     (acc, m) => {
       acc[m.status] = (acc[m.status] ?? 0) + 1;
       return acc;
     },
     {} as Record<string, number>,
   );
-  ctx.body = { total: rows.length, byStatus: stats };
+  const typeStats = rows.reduce(
+    (acc, m) => {
+      const t = m.type ?? 'manga';
+      acc[t] = (acc[t] ?? 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>,
+  );
+  ctx.body = { total: rows.length, byStatus: statusStats, byType: typeStats };
 });
 
 // GET /api/manga/:id
@@ -53,6 +77,7 @@ router.post('/', async (ctx) => {
   const body = ctx.request.body as any;
   const [created] = await db.insert(manga).values({
     title:          body.title,
+    type:           body.type           ?? 'manga',
     author:         body.author         ?? null,
     coverUrl:       body.coverUrl       ?? null,
     status:         body.status         ?? 'plan_to_read',

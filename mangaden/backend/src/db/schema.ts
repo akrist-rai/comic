@@ -4,6 +4,9 @@ import { createId } from '@paralleldrive/cuid2';
 export const manga = sqliteTable('manga', {
   id:             text('id').primaryKey().$defaultFn(() => createId()),
   title:          text('title').notNull(),
+  type:           text('type', {
+                    enum: ['manga', 'anime', 'web_series', 'movie', 'book', 'game'],
+                  }).notNull().default('manga'),
   author:         text('author'),
   coverUrl:       text('cover_url'),
   status:         text('status', {

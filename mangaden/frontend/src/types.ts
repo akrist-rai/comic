@@ -9,19 +9,30 @@ export type Status =
   | 'dropped'
   | 'plan_to_read';
 
+export type MediaType =
+  | 'manga'
+  | 'anime'
+  | 'web_series'
+  | 'movie'
+  | 'book'
+  | 'game';
+
 export interface Manga {
   id:             string;
   title:          string;
-  author:         string | null;
+  type:           MediaType;
+  author?:        string | null;
   coverUrl:       string | null;
   status:         Status;
   rating:         number | null;   // 1–10, null = not yet rated
-  currentChapter: number;
-  totalChapters:  number | null;   // null = ongoing series
+  currentChapter?: number;
+  totalChapters?:  number | null;
   notes:          string | null;
   genres:         string[];
-  startDate:      string | null;
-  finishDate:     string | null;
+  startDate?:      string | null;
+  finishDate?:     string | null;
   createdAt:      string;
   updatedAt:      string;
 }
+
+export type Entry = Manga;

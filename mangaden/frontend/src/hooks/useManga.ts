@@ -19,6 +19,7 @@ type FilterStatus = import('../components/FilterBar').FilterStatus;
 interface UseMangaOptions {
   status: FilterStatus;
   search: string;
+  type:   string;
 }
 
 interface UseMangaReturn {
@@ -27,7 +28,7 @@ interface UseMangaReturn {
   error:   string | null;
 }
 
-export function useManga({ status, search }: UseMangaOptions): UseMangaReturn {
+export function useManga({ status, search, type }: UseMangaOptions): UseMangaReturn {
   const { items, loading, error } = useMangaState();
 
   // ── CONCEPT: useDebounce inside a custom hook ─────────────────────────────
@@ -50,13 +51,20 @@ export function useManga({ status, search }: UseMangaOptions): UseMangaReturn {
       list = list.filter(m => m.status === status);
     }
 
+    if (type !== 'all') {
+      list = list.filter(m => m.type === type);
+    }
+
     if (debouncedSearch.trim()) {
       const q = debouncedSearch.toLowerCase();
-      list = list.filter(m => m.title.toLowerCase().includes(q));
+      list = list.filter(m => 
+        m.title.toLowerCase().includes(q) ||
+        m.genres.some(g => g.toLowerCase().includes(q))
+      );
     }
 
     return list;
-  }, [items, status, debouncedSearch]);
+  }, [items, status, type, debouncedSearch]);
 
   return { manga: filtered, loading, error };
 }

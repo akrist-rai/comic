@@ -1,20 +1,65 @@
 import Koa from 'koa';
 import { koaBody } from 'koa-body';
+import fs from 'fs';
+import path from 'path';
+import { createReadStream } from 'fs';
+import { fileURLToPath } from 'url';
 import { cors } from './middleware/cors';
 import { mangaRouter } from './routes/manga';
+import { goodstuffRouter } from './routes/goodstuff';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname  = path.dirname(__filename);
+
+const UPLOADS_DIR = path.resolve(__dirname, '../../uploads/covers');
+
+if (!fs.existsSync(UPLOADS_DIR)) {
+  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+}
 
 const app  = new Koa();
 const PORT = 3001;
 
+const IMAGE_MIME: Record<string, string> = {
+  '.jpg':  'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.png':  'image/png',
+  '.webp': 'image/webp',
+  '.gif':  'image/gif',
+  '.avif': 'image/avif',
+};
+
 app.use(cors);
-// ── Body size limit ───────────────────────────────────────────────────────────
-// koa-body's default JSON limit is 1 MB.
-// A base64-encoded cover image is ~33% larger than the raw file — a typical
-// 600 KB JPEG becomes ~800 KB of text. We raise the limit to 10 MB to be safe.
-app.use(koaBody({ jsonLimit: '10mb' }));
+
+app.use(koaBody({
+  jsonLimit: '10mb',
+  multipart: true,
+  formidable: {
+    uploadDir:      UPLOADS_DIR,
+    keepExtensions: true,
+    maxFileSize:    10 * 1024 * 1024,
+  },
+}));
+
+// Serve uploaded cover images
+app.use(async (ctx, next) => {
+  if (!ctx.path.startsWith('/api/covers/')) { await next(); return; }
+
+  const filename = path.basename(decodeURIComponent(ctx.path.replace('/api/covers/', '')));
+  const filepath = path.join(UPLOADS_DIR, filename);
+
+  if (!fs.existsSync(filepath)) { ctx.status = 404; ctx.body = { error: 'Not found' }; return; }
+
+  ctx.type = IMAGE_MIME[path.extname(filename).toLowerCase()] ?? 'image/jpeg';
+  ctx.set('Cache-Control', 'public, max-age=86400');
+  ctx.body = createReadStream(filepath);
+});
+
 app.use(mangaRouter.routes());
 app.use(mangaRouter.allowedMethods());
+app.use(goodstuffRouter.routes());
+app.use(goodstuffRouter.allowedMethods());
 
 app.listen(PORT, () => {
-  console.log(`MangaDen API  →  http://localhost:${PORT}`);
+  console.log(`Mangaden API  →  http://localhost:${PORT}`);
 });
