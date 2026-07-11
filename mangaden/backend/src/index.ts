@@ -5,7 +5,7 @@ import path from 'path';
 import { createReadStream } from 'fs';
 import { fileURLToPath } from 'url';
 import { cors } from './middleware/cors';
-import { mangaRouter } from './routes/manga';
+import { tasksRouter } from './routes/tasks';
 import { goodstuffRouter } from './routes/goodstuff';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -55,11 +55,11 @@ app.use(async (ctx, next) => {
   ctx.body = createReadStream(filepath);
 });
 
-app.use(mangaRouter.routes());
-app.use(mangaRouter.allowedMethods());
+app.use(tasksRouter.routes());
+app.use(tasksRouter.allowedMethods());
 app.use(goodstuffRouter.routes());
 app.use(goodstuffRouter.allowedMethods());
 
 app.listen(PORT, () => {
-  console.log(`Mangaden API  →  http://localhost:${PORT}`);
+  console.log(`Taskden API  →  http://localhost:${PORT}`);
 });

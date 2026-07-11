@@ -1,25 +1,22 @@
 import { motion, LayoutGroup } from 'framer-motion';
 import { Search } from 'lucide-react';
-import type { Status } from '../types';
+import type { TaskStatus } from '../types';
 
-export type FilterStatus = Status | 'all';
+export type FilterStatus = TaskStatus | 'all';
 
 const TABS: { value: FilterStatus; label: string }[] = [
-  { value: 'all',          label: 'All'          },
-  { value: 'reading',      label: 'Reading'      },
-  { value: 'completed',    label: 'Completed'    },
-  { value: 'on_hold',      label: 'On Hold'      },
-  { value: 'dropped',      label: 'Dropped'      },
-  { value: 'plan_to_read', label: 'Plan to Read' },
+  { value: 'all',      label: 'All Tasks' },
+  { value: 'not_done', label: 'Not Done'  },
+  { value: 'done',     label: 'Done'      },
 ];
 
 interface FilterBarProps {
-  activeStatus:   FilterStatus;
-  search:         string;
-  total:          number;
-  filtered:       number;
-  onStatusChange: (status: FilterStatus) => void;
-  onSearchChange: (query: string) => void;
+  activeStatus:     FilterStatus;
+  search:           string;
+  total:            number;
+  filtered:         number;
+  onStatusChange:   (status: FilterStatus) => void;
+  onSearchChange:   (query: string) => void;
 }
 
 export function FilterBar({
@@ -57,19 +54,19 @@ export function FilterBar({
         </div>
       </LayoutGroup>
 
-      <div className="filter-bar__right">
-        <span className="filter-bar__count">
-          {filtered === total ? `${total} items` : `${filtered} of ${total}`}
+      <div className="filter-bar__right" style={{ justifyContent: 'flex-end', gap: '16px' }}>
+        <span className="filter-bar__count" style={{ fontSize: '12px', color: 'var(--muted)' }}>
+          {filtered === total ? `${total} tasks` : `${filtered} of ${total}`}
         </span>
         <div className="filter-bar__search-wrap">
           <Search size={13} className="filter-bar__search-icon" />
           <input
             type="search"
             className="filter-bar__search"
-            placeholder="Search…"
+            placeholder="Search tasks..."
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
-            aria-label="Search by title or genre"
+            aria-label="Search by title"
           />
         </div>
       </div>

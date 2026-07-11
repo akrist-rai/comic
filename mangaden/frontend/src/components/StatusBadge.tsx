@@ -1,16 +1,19 @@
-import type { Status } from '../types';
+import type { TaskStatus } from '../types';
 
-const STATUS_LABELS: Record<Status, string> = {
-  reading:      'Reading',
-  completed:    'Completed',
-  on_hold:      'On Hold',
-  dropped:      'Dropped',
-  plan_to_read: 'Plan to Read',
+const STATUS_LABELS: Record<TaskStatus, string> = {
+  done:     'Done',
+  not_done: 'Not Done',
 };
 
-export function StatusBadge({ status }: { status: Status }) {
+const CSS_MAP: Record<TaskStatus, string> = {
+  done:     'completed',
+  not_done: 'plan_to_read',
+};
+
+export function StatusBadge({ status }: { status: TaskStatus }) {
+  const cssClass = CSS_MAP[status];
   return (
-    <span className={`status-badge status-badge--${status}`}>
+    <span className={`status-badge status-badge--${cssClass}`}>
       {STATUS_LABELS[status]}
     </span>
   );

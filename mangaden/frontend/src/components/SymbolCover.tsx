@@ -1,9 +1,7 @@
 import { useMemo } from 'react';
-import type { MediaType } from '../types';
 
 interface SymbolCoverProps {
   title: string;
-  type:  MediaType;
 }
 
 const CYRILLIC  = ['Д', 'Ж', 'Ф', 'Ц', 'Ш', 'Щ', 'Ъ', 'Ы', 'Э', 'Ю', 'Я', 'Б', 'Г', 'Л', 'И', 'П'];
@@ -23,15 +21,6 @@ const GRADIENTS = [
   'linear-gradient(135deg, #1c1917 0%, #292524 50%, #44403c 100%)', // Onyx
 ];
 
-const TYPE_ICONS: Record<MediaType, string> = {
-  manga:      '📖',
-  anime:      '🎬',
-  web_series: '📺',
-  movie:      '🎥',
-  book:       '📘',
-  game:       '🎮',
-};
-
 function getHash(str: string): number {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
@@ -40,10 +29,10 @@ function getHash(str: string): number {
   return hash;
 }
 
-export function SymbolCover({ title, type }: SymbolCoverProps) {
+export function SymbolCover({ title }: SymbolCoverProps) {
   const hash = useMemo(() => getHash(title), [title]);
 
-  const { gradient, symbol, icon } = useMemo(() => {
+  const { gradient, symbol } = useMemo(() => {
     const absHash = Math.abs(hash);
     
     // Choose gradient
@@ -57,11 +46,8 @@ export function SymbolCover({ title, type }: SymbolCoverProps) {
     // Choose symbol
     const symbol = selectedSet[(absHash * 31) % selectedSet.length];
     
-    // Choose type icon
-    const icon = TYPE_ICONS[type] ?? '❓';
-
-    return { gradient, symbol, icon };
-  }, [hash, type]);
+    return { gradient, symbol };
+  }, [hash]);
 
   return (
     <div 
@@ -70,10 +56,6 @@ export function SymbolCover({ title, type }: SymbolCoverProps) {
     >
       <div className="symbol-cover__accent-glow" />
       <div className="symbol-cover__symbol">{symbol}</div>
-      <div className="symbol-cover__meta">
-        <span className="symbol-cover__icon">{icon}</span>
-        <span className="symbol-cover__type">{type.replace('_', ' ')}</span>
-      </div>
     </div>
   );
 }
